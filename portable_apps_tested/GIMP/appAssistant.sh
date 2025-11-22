@@ -22,7 +22,6 @@ check_deps() {
     if ! command -v jq &> /dev/null; then echo "[X] Error: 'jq' is missing. Install it."; exit 1; fi
     if ! command -v xpra &> /dev/null; then echo "[X] Error: 'xpra' is missing. Install it."; exit 1; fi
     if ! command -v podman &> /dev/null; then echo "[X] Error: 'podman' is missing. Install it."; exit 1; fi
-    if ! command -v openssl &> /dev/null; then echo "[X] Error: 'openssl' is missing. Install it."; exit 1; fi
 }
 
 # --- HELPER: DETECT HOME FOLDER ---
@@ -132,8 +131,9 @@ do_export() {
     if [ -d "$INTERNAL_HOME" ] && [ "$(ls -A $INTERNAL_HOME)" ]; then
         echo "[-] Baking session data (_session/home) into the image..."
         
-        # SMART ID DETECTION
+        # --- SMART ID DETECTION ---
         BASE_IMAGE_ID=""
+        
         if podman --root "$PODMAN_ROOT" --runroot "$PODMAN_RUNROOT" image exists "$APP_IMAGE"; then
              BASE_IMAGE_ID=$(podman --root "$PODMAN_ROOT" --runroot "$PODMAN_RUNROOT" image inspect --format '{{.Id}}' "$APP_IMAGE")
         elif podman --root "$PODMAN_ROOT" --runroot "$PODMAN_RUNROOT" image exists "localhost/$APP_IMAGE"; then
@@ -180,37 +180,22 @@ EOF
         EXPORT_IMAGE="$APP_IMAGE"
     fi
 
-    # 3. SAVE AND OPTIONALLY ENCRYPT
-    echo "[-] Saving $EXPORT_IMAGE to temporary tar..."
+    echo "[-] Saving $EXPORT_IMAGE to app.tar..."
     
+    # Handle localhost prefix
     if ! podman --root "$PODMAN_ROOT" --runroot "$PODMAN_RUNROOT" image exists "$EXPORT_IMAGE"; then
         if podman --root "$PODMAN_ROOT" --runroot "$PODMAN_RUNROOT" image exists "localhost/$EXPORT_IMAGE"; then
             EXPORT_IMAGE="localhost/$EXPORT_IMAGE"
         fi
     fi
 
-    # Save to temp file first
-    TEMP_TAR="$TAR_FILE.tmp"
-    rm -f "$TEMP_TAR" "$TAR_FILE"
-    podman --root "$PODMAN_ROOT" --runroot "$PODMAN_RUNROOT" save -o "$TEMP_TAR" "$EXPORT_IMAGE"
-
-    # Encryption Prompt
-    echo ""
-    read -p "🔒 Do you want to ENCRYPT this export with a password? [y/N] " -n 1 -r
-    echo ""
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
-        echo "[-] Encrypting archive (AES-256)..."
-        openssl enc -aes-256-cbc -salt -pbkdf2 -in "$TEMP_TAR" -out "$TAR_FILE"
-        rm "$TEMP_TAR"
-        echo "[-] Encrypted export saved to $TAR_FILE"
-    else
-        mv "$TEMP_TAR" "$TAR_FILE"
-        echo "[-] Standard export saved to $TAR_FILE"
-    fi
+    rm -f "$TAR_FILE"
+    podman --root "$PODMAN_ROOT" --runroot "$PODMAN_RUNROOT" save -o "$TAR_FILE" "$EXPORT_IMAGE"
 
     echo "[-] Cleaning local session directory..."
     rm -rf "$SESSION_DIR" 2>/dev/null || sudo rm -rf "$SESSION_DIR"
-    echo "[-] Export Complete."
+    
+    echo "[-] Export Complete: $TAR_FILE (Session cleared)"
 }
 
 # ==============================================================================
@@ -231,31 +216,8 @@ do_import() {
     
     mkdir -p "$PODMAN_ROOT"
 
-    # --- DECRYPTION LOGIC ---
-    # Check if file has "Salted" header (OpenSSL default)
-    IS_ENCRYPTED=$(head -c 8 "$TAR_FILE" | grep "Salted__" || true)
-    
-    if [ -n "$IS_ENCRYPTED" ]; then
-        echo "🔒 Encrypted archive detected."
-        TEMP_DECRYPTED="$TAR_FILE.decrypted"
-        
-        # Try to decrypt
-        if openssl enc -d -aes-256-cbc -pbkdf2 -in "$TAR_FILE" -out "$TEMP_DECRYPTED"; then
-            echo "[-] Decryption successful."
-            echo "[-] Loading image..."
-            LOAD_OUTPUT=$(podman --root "$PODMAN_ROOT" --runroot "$PODMAN_RUNROOT" load -i "$TEMP_DECRYPTED")
-            rm "$TEMP_DECRYPTED"
-        else
-            echo "[X] Decryption failed (Wrong password?). Aborting."
-            rm -f "$TEMP_DECRYPTED"
-            exit 1
-        fi
-    else
-        echo "[-] Loading image..."
-        LOAD_OUTPUT=$(podman --root "$PODMAN_ROOT" --runroot "$PODMAN_RUNROOT" load -i "$TAR_FILE")
-    fi
-    # ------------------------
-
+    echo "[-] Loading image..."
+    LOAD_OUTPUT=$(podman --root "$PODMAN_ROOT" --runroot "$PODMAN_RUNROOT" load -i "$TAR_FILE")
     echo "$LOAD_OUTPUT"
 
     if [ ! -f "$OPTIONS_FILE" ]; then
@@ -290,7 +252,7 @@ EOF
     if [ -z "$(ls -A $INTERNAL_HOME)" ]; then
         echo "[-] Restoring session data from image to _session/home..."
         
-        # FIX: ADD --userns=keep-id TO FIX PERMISSIONS
+        # --- FIX: ADD --userns=keep-id TO FIX PERMISSIONS ---
         podman --root "$PODMAN_ROOT" --runroot "$PODMAN_RUNROOT" run --rm \
             --userns=keep-id \
             --entrypoint /bin/sh \

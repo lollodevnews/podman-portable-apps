@@ -1,0 +1,24 @@
+[-] Preparing Snapshot Export for test-dummy:latest...
+[-] Stopping running container to ensure data integrity...
+time="2025-11-22T17:59:20Z" level=warning msg="StopSignal SIGTERM failed to stop container portable-5509 in 10 seconds, resorting to SIGKILL"
+[-] Baking session data (_session/home) into the image...
+    Internal Home: /home/appuser
+    Building snapshot layer...
+STEP 1/2: FROM 5418cbd5d1719e1d14724514f66c925da7fd140451fc8004fe5105ecbf8a671d
+STEP 2/2: COPY --chown=1000:1000 . /home/appuser/
+COMMIT test-dummy:latest-snapshot
+--> af69ec5cbe88
+Successfully tagged localhost/test-dummy:latest-snapshot
+af69ec5cbe88aced505b32ed463b6623b8c20af3dfe3554e7ba4eb106a17cd68
+[-] Saving test-dummy:latest-snapshot to temporary tar...
+Copying blob sha256:256f393e029fa2063d8c93720da36a74a032bed3355a2bc3e313ad12f8bde9d1
+Copying blob sha256:954adba5592baf7a39503c7dbe0ec3e84892c38a852c6eedd7d4d5f67571297a
+Copying blob sha256:2e094b1e4e4e3d3b604117ae128acb0b38eb237eb67054d13cd779ba145f44ae
+Copying blob sha256:d0d42873303a4fa715c862cb72081bccf05ab82f3d3781ca78c0a607d3b5308f
+Copying config sha256:af69ec5cbe88aced505b32ed463b6623b8c20af3dfe3554e7ba4eb106a17cd68
+Writing manifest to image destination
+
+
+[-] Standard export saved to /home/dockmaster/Desktop/podmanapps/automated_test/tests/autopilot_1763834286/app.tar
+[-] Cleaning local session directory...
+[-] Export Complete.

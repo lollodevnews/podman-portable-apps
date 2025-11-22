@@ -1,0 +1,17 @@
+{
+    "app_display_name": "VLC Portable App",
+    "image_repo_tag": "portable-app:latest",
+    "permissions": {
+        "DataPersistance": { "value": "Y" },
+        "SharedData": { "value": "Y" },
+        "UserMapping": { "value": "Y" },
+        "NetworkAccess": { "value": "Y" },
+        "InputDevices": { "value": "N" },
+        "SoundAccess": { "value": "Y" },
+        "MicrophoneAccess": { "value": "N" },
+        "WebcamAccess": { "value": "N" }
+    },
+    "port_mappings": [],
+    "podman_extra_args": "",
+    "xpra_extra_args": ""
+}

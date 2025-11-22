@@ -1,0 +1,17 @@
+{
+    "app_display_name": "Portable Gitea Console",
+    "image_repo_tag": "portable-gitea:latest",
+    "permissions": {
+        "DataPersistance": { "value": "Y" },
+        "SharedData": { "value": "Y" },
+        "UserMapping": { "value": "Y" },
+        "NetworkAccess": { "value": "N" },
+        "InputDevices": { "value": "Y" },
+        "SoundAccess": { "value": "N" },
+        "MicrophoneAccess": { "value": "N" },
+        "WebcamAccess": { "value": "N" }
+    },
+    "port_mappings": ["3000:3000", "2222:22"],
+    "podman_extra_args": "",
+    "xpra_extra_args": ""
+}

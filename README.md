@@ -36,6 +36,7 @@ Save your current progress (cookies, extensions, work) to a portable file:
 ./appAssistant.sh export
 ```
 *Creates an `app.tar` file containing the software AND your data.*
+It will ask for a password, in case you want to encrypt your exported setup.
 
 ### 4. Restore / Import
 Restore the app on a different machine (or after a cleanup):
