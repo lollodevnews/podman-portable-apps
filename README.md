@@ -1,7 +1,7 @@
 # 📦 Podman Portable Apps
 
 A lightweight, rootless container manager that turns Dockerfiles into fully portable, self-contained Linux applications with GUI, audio, and **granular permission control**.  
-*warning* it works well with Debian thanks to sysvinit, but systemd  distros like Linux Mint have issues. Will need some time to investigate
+**warning** it works well with Debian thanks to sysvinit, but systemd  distros like Linux Mint have issues. Will need some time to investigate
 
 ## 🚀 Features
 * **True Portability:** Export your app + settings + history into a single `.tar` file.
